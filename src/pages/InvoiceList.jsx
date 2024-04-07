@@ -11,6 +11,7 @@ import { deleteInvoice } from "../redux/invoicesSlice";
 
 const InvoiceList = () => {
   const { invoiceList, getOneInvoice } = useInvoiceListData();
+  console.log(invoiceList);
   const isListEmpty = invoiceList.length === 0;
   const [copyId, setCopyId] = useState("");
   const navigate = useNavigate();
@@ -163,7 +164,7 @@ const InvoiceRow = ({ invoice, navigate }) => {
           discountRate: invoice.discountRate,
           discountAmount: invoice.discountAmount,
         }}
-        items={invoice.items}
+        groups={invoice.groups}
         currency={invoice.currency}
         subTotal={invoice.subTotal}
         taxAmount={invoice.taxAmount}

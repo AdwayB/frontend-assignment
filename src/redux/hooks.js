@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { selectInvoiceList } from "./invoicesSlice";
-import { selectProductsList } from "./productsSlice";
+import { selectGroupsList, selectProductsList } from "./productsSlice";
 
 export const useInvoiceListData = () => {
   const invoiceList = useSelector(selectInvoiceList);
@@ -25,7 +25,7 @@ export const useInvoiceListData = () => {
 export const useProductsListData = () => {
   const productsList = useSelector(selectProductsList);
 
-  const getOneInvoice = (receivedId) => {
+  const getOneProduct = (receivedId) => {
     return (
       productsList.find(
         (product) => product.id.toString() === receivedId.toString()
@@ -37,7 +37,36 @@ export const useProductsListData = () => {
 
   return {
     productsList,
-    getOneInvoice,
+    getOneProduct,
+    listSize,
+  };
+};
+
+export const useGroupsListData = () => {
+  const groupsList = useSelector(selectGroupsList);
+
+  const getOneGroupById = (receivedId) => {
+    return (
+      groupsList.find(
+        (group) => group.id.toString() === receivedId.toString()
+      ) || null
+    );
+  };
+
+  const getOneGroupByName = (receivedName) => {
+    return (
+      groupsList.find(
+        (group) => group.name.toString() === receivedName.toString()
+      ) || null
+    );
+  };
+
+  const listSize = groupsList.length;
+
+  return {
+    groupsList,
+    getOneGroupById,
+    getOneGroupByName,
     listSize,
   };
 };

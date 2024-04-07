@@ -7,11 +7,11 @@ import Form from "react-bootstrap/Form";
 import Card from "react-bootstrap/Card";
 import InvoiceItem from "./InvoiceItem";
 import InvoiceModal from "./InvoiceModal";
-import { BiArrowBack, BiPlusCircle } from "react-icons/bi";
+import { BiPlusCircle } from "react-icons/bi";
 import InputGroup from "react-bootstrap/InputGroup";
 import { useDispatch } from "react-redux";
 import { addInvoice, updateInvoice } from "../redux/invoicesSlice";
-import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import generateRandomId from "../utils/generateRandomId";
 import { useInvoiceListData } from "../redux/hooks";
 import { addGroup } from "../redux/productsSlice";
@@ -28,8 +28,6 @@ const InvoiceForm = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [copyId, setCopyId] = useState("");
   const [newGroup, setNewGroup] = useState("");
-  const [selectedGroup, setSelectedGroup] = useState("");
-  const [groups, setGroups] = useState([]);
   const { getOneInvoice, listSize } = useInvoiceListData();
   const [formData, setFormData] = useState(
     isEdit
@@ -59,15 +57,7 @@ const InvoiceForm = () => {
           discountRate: "",
           discountAmount: "0.00",
           currency: "$",
-          items: [
-            {
-              itemId: 0,
-              itemName: "",
-              itemDescription: "",
-              itemPrice: "1.00",
-              itemQuantity: 1,
-            },
-          ],
+          groups: [],
         }
   );
 
@@ -75,45 +65,63 @@ const InvoiceForm = () => {
     handleCalculateTotal();
   }, []);
 
-  const handleRowDel = (itemToDelete) => {
-    const updatedItems = formData.items.filter(
-      (item) => item.itemId !== itemToDelete.itemId
-    );
-    setFormData({ ...formData, items: updatedItems });
+  const handleRowDel = (itemToDelete, groupName) => {
+    setFormData((previous) => ({
+      ...previous,
+      groups: previous.groups.map((group) =>
+        group.groupName === groupName
+          ? {
+              ...group,
+              items: group.items.filter(
+                (item) => item.itemId !== itemToDelete.itemId
+              ),
+            }
+          : group
+      ),
+    }));
     handleCalculateTotal();
   };
 
-  const handleAddEvent = () => {
+  const handleAddEvent = (groupName) => {
     const id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
     const newItem = {
       itemId: id,
-      groupName: selectedGroup,
       itemName: "",
       itemDescription: "",
-      itemPrice: "1.00",
+      itemPrice: "0.00",
       itemQuantity: 1,
     };
-    setFormData({
-      ...formData,
-      items: [...formData.items, newItem],
-    });
+    setFormData((previous) => ({
+      ...previous,
+      groups: previous.groups.map((group) =>
+        group.groupName === groupName
+          ? { ...group, items: [...group.items, newItem] }
+          : group
+      ),
+    }));
     handleCalculateTotal();
   };
 
   const handleAddGroup = () => {
+    if (newGroup === "") return;
     dispatch(addGroup({ id: generateRandomId(), name: newGroup }));
-    setSelectedGroup(newGroup);
-    setGroups([...groups, newGroup]);
+    setFormData((previous) => ({
+      ...previous,
+      groups: [...previous.groups, { groupName: newGroup, items: [] }],
+    }));
     setNewGroup("");
+    console.log("addedGroup");
   };
 
   const handleCalculateTotal = () => {
     setFormData((prevFormData) => {
       let subTotal = 0;
 
-      prevFormData.items.forEach((item) => {
-        subTotal +=
-          parseFloat(item.itemPrice).toFixed(2) * parseInt(item.itemQuantity);
+      prevFormData.groups.forEach((group) => {
+        group.items.forEach((item) => {
+          subTotal +=
+            parseFloat(item.itemPrice).toFixed(2) * parseInt(item.itemQuantity);
+        });
       });
 
       const taxAmount = parseFloat(
@@ -138,15 +146,24 @@ const InvoiceForm = () => {
     });
   };
 
-  const onItemizedItemEdit = (evt, id) => {
-    const updatedItems = formData.items.map((oldItem) => {
-      if (oldItem.itemId === id) {
-        return { ...oldItem, [evt.target.name]: evt.target.value };
-      }
-      return oldItem;
-    });
+  const onItemizedItemEdit = (evt, id, groupName) => {
+    const grouptoUpdate = formData.groups.find(
+      (group) => group.groupName === groupName
+    );
+    const updatedItems = grouptoUpdate?.items.map((item) =>
+      item.itemId === id
+        ? { ...item, [evt.target.name]: evt.target.value }
+        : item
+    );
 
-    setFormData({ ...formData, items: updatedItems });
+    setFormData((previous) => ({
+      ...previous,
+      groups: previous.groups.map((group) =>
+        group.groupName === groupName
+          ? { ...group, items: updatedItems }
+          : group
+      ),
+    }));
     handleCalculateTotal();
   };
 
@@ -184,10 +201,10 @@ const InvoiceForm = () => {
   };
 
   const handleCopyInvoice = () => {
-    const recievedInvoice = getOneInvoice(copyId);
-    if (recievedInvoice) {
+    const receivedInvoice = getOneInvoice(copyId);
+    if (receivedInvoice) {
       setFormData({
-        ...recievedInvoice,
+        ...receivedInvoice,
         id: formData.id,
         invoiceNumber: formData.invoiceNumber,
       });
@@ -198,18 +215,9 @@ const InvoiceForm = () => {
 
   return (
     <Form onSubmit={openModal}>
-      <div className="d-flex align-items-center">
-        <BiArrowBack size={18} />
-        <div className="fw-bold mt-1 mx-2 cursor-pointer">
-          <Link to="/">
-            <h5>Go Back</h5>
-          </Link>
-        </div>
-      </div>
-
       <Row>
         <Col md={8} lg={9}>
-          <Card className="p-4 p-xl-5 my-3 my-xl-4">
+          <Card className="p-4 p-xl-5">
             <div className="d-flex flex-row align-items-start justify-content-between mb-3">
               <div className="d-flex flex-column">
                 <div className="d-flex flex-column">
@@ -316,7 +324,7 @@ const InvoiceForm = () => {
             </Row>
             <Row className="justify-content-between align-items-center">
               <Col>
-                <Form.Label className="fw-bold">Group Name:</Form.Label>
+                <Form.Label className="fw-bold">Item Group Name:</Form.Label>
                 <EditableField
                   cellData={{
                     type: "text",
@@ -337,17 +345,20 @@ const InvoiceForm = () => {
                 />
               </Col>
             </Row>
-            {groups.map((group, index) => {
-              <InvoiceItem
-                id={index}
-                selectedGroup={group}
-                onItemizedItemEdit={onItemizedItemEdit}
-                onRowAdd={handleAddEvent}
-                onRowDel={handleRowDel}
-                currency={formData.currency}
-                items={formData.items}
-              />;
-            })}
+            {formData?.groups.map((group, index) => (
+              <div className="mt-4" key={`${index}${group.groupName}`}>
+                <InvoiceItem
+                  key={`${index}${group.groupName}`}
+                  id={index}
+                  selectedGroup={group.groupName}
+                  onItemizedItemEdit={onItemizedItemEdit}
+                  onRowAdd={() => handleAddEvent(group.groupName)}
+                  onRowDel={handleRowDel}
+                  currency={formData.currency}
+                  items={group?.items}
+                />
+              </div>
+            ))}
             <Row className="mt-4 justify-content-end">
               <Col lg={6}>
                 <div className="d-flex flex-row align-items-start justify-content-between">
@@ -437,7 +448,7 @@ const InvoiceForm = () => {
                 discountRate: formData.discountRate,
                 discountAmount: formData.discountAmount,
               }}
-              items={formData.items}
+              groups={formData?.groups}
               currency={formData.currency}
               subTotal={formData.subTotal}
               taxAmount={formData.taxAmount}

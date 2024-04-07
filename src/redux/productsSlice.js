@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import generateRandomId from "../utils/generateRandomId";
 
 const productsSlice = createSlice({
   name: "products",
@@ -24,6 +23,7 @@ const productsSlice = createSlice({
 
 export const { addProduct, updateProduct, addGroup } = productsSlice.actions;
 
-export const selectProductsList = (state) => state.products;
+export const selectProductsList = (state) => state.products.items;
+export const selectGroupsList = (state) => state.products.groups;
 
 export default productsSlice.reducer;

@@ -13,20 +13,22 @@ const InvoiceItem = (props) => {
     onRowDel,
     items,
     onRowAdd,
+    listKey,
   } = props;
 
-  const itemTable = items.map((item) => (
+  const itemTable = items.map((item, index) => (
     <ItemRow
-      key={item.id}
+      key={`${item.id}-${index}`}
       item={item}
       onDelEvent={onRowDel}
       onItemizedItemEdit={onItemizedItemEdit}
       currency={currency}
+      selectedGroup={selectedGroup}
     />
   ));
 
   return (
-    <div>
+    <div key={listKey}>
       <Table>
         <thead>
           <tr>
@@ -47,14 +49,18 @@ const InvoiceItem = (props) => {
 
 const ItemRow = (props) => {
   const onDelEvent = () => {
-    props.onDelEvent(props.item);
+    props.onDelEvent(props.item, props.selectedGroup);
   };
   return (
-    <tr>
+    <tr key={props.key}>
       <td style={{ width: "100%" }}>
         <EditableField
           onItemizedItemEdit={(evt) =>
-            props.onItemizedItemEdit(evt, props.item.itemId)
+            props.onItemizedItemEdit(
+              evt,
+              props.item.itemId,
+              props.selectedGroup
+            )
           }
           cellData={{
             type: "text",
@@ -66,7 +72,11 @@ const ItemRow = (props) => {
         />
         <EditableField
           onItemizedItemEdit={(evt) =>
-            props.onItemizedItemEdit(evt, props.item.itemId)
+            props.onItemizedItemEdit(
+              evt,
+              props.item.itemId,
+              props.selectedGroup
+            )
           }
           cellData={{
             type: "text",
@@ -80,7 +90,11 @@ const ItemRow = (props) => {
       <td style={{ minWidth: "70px" }}>
         <EditableField
           onItemizedItemEdit={(evt) =>
-            props.onItemizedItemEdit(evt, props.item.itemId)
+            props.onItemizedItemEdit(
+              evt,
+              props.item.itemId,
+              props.selectedGroup
+            )
           }
           cellData={{
             type: "number",
@@ -95,7 +109,11 @@ const ItemRow = (props) => {
       <td style={{ minWidth: "130px" }}>
         <EditableField
           onItemizedItemEdit={(evt) =>
-            props.onItemizedItemEdit(evt, props.item.itemId)
+            props.onItemizedItemEdit(
+              evt,
+              props.item.itemId,
+              props.selectedGroup
+            )
           }
           cellData={{
             leading: props.currency,

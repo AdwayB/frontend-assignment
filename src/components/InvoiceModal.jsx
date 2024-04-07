@@ -85,9 +85,9 @@ const InvoiceModal = (props) => {
                 </tr>
               </thead>
               <tbody>
-                {props.items.map((item, i) => {
-                  return (
-                    <tr id={i} key={i}>
+                {props.groups.map((group, i) =>
+                  group.items.map((item, j) => (
+                    <tr id={i} key={`${i}-${j}`}>
                       <td style={{ width: "70px" }}>{item.itemQuantity}</td>
                       <td>
                         {item.itemName} - {item.itemDescription}
@@ -99,8 +99,8 @@ const InvoiceModal = (props) => {
                         {props.currency} {item.itemPrice * item.itemQuantity}
                       </td>
                     </tr>
-                  );
-                })}
+                  ))
+                )}
               </tbody>
             </Table>
             <Table>
