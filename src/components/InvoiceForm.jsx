@@ -14,8 +14,8 @@ import { addInvoice, updateInvoice } from "../redux/invoicesSlice";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import generateRandomId from "../utils/generateRandomId";
 import { useInvoiceListData } from "../redux/hooks";
-import { addGroup } from "../redux/productsSlice";
 import EditableField from "./EditableField";
+import { calculateInvoiceTotal } from "../utils/calculateInvoiceTotal";
 
 const InvoiceForm = () => {
   const dispatch = useDispatch();
@@ -104,37 +104,21 @@ const InvoiceForm = () => {
 
   const handleAddGroup = () => {
     if (newGroup === "") return;
-    dispatch(addGroup({ id: generateRandomId(), name: newGroup }));
     setFormData((previous) => ({
       ...previous,
       groups: [...previous.groups, { groupName: newGroup, items: [] }],
     }));
     setNewGroup("");
-    console.log("addedGroup");
   };
 
   const handleCalculateTotal = () => {
     setFormData((prevFormData) => {
-      let subTotal = 0;
-
-      prevFormData.groups.forEach((group) => {
-        group.items.forEach((item) => {
-          subTotal +=
-            parseFloat(item.itemPrice).toFixed(2) * parseInt(item.itemQuantity);
-        });
-      });
-
-      const taxAmount = parseFloat(
-        subTotal * (prevFormData.taxRate / 100)
-      ).toFixed(2);
-      const discountAmount = parseFloat(
-        subTotal * (prevFormData.discountRate / 100)
-      ).toFixed(2);
-      const total = (
-        subTotal -
-        parseFloat(discountAmount) +
-        parseFloat(taxAmount)
-      ).toFixed(2);
+      const { subTotal, taxAmount, discountAmount, total } =
+        calculateInvoiceTotal(
+          prevFormData.groups,
+          prevFormData.taxRate,
+          prevFormData.discountRate
+        );
 
       return {
         ...prevFormData,
@@ -188,7 +172,9 @@ const InvoiceForm = () => {
 
   const handleAddInvoice = () => {
     if (isEdit) {
-      dispatch(updateInvoice({ id: params.id, updatedInvoice: formData }));
+      dispatch(
+        updateInvoice({ id: parseInt(params.id), updatedInvoice: formData })
+      );
       alert("Invoice updated successfuly 🥳");
     } else if (isCopy) {
       dispatch(addInvoice({ id: generateRandomId(), ...formData }));

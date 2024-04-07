@@ -85,22 +85,29 @@ const InvoiceModal = (props) => {
                 </tr>
               </thead>
               <tbody>
-                {props.groups.map((group, i) =>
-                  group.items.map((item, j) => (
-                    <tr id={i} key={`${i}-${j}`}>
-                      <td style={{ width: "70px" }}>{item.itemQuantity}</td>
-                      <td>
-                        {item.itemName} - {item.itemDescription}
-                      </td>
-                      <td className="text-end" style={{ width: "100px" }}>
-                        {props.currency} {item.itemPrice}
-                      </td>
-                      <td className="text-end" style={{ width: "100px" }}>
-                        {props.currency} {item.itemPrice * item.itemQuantity}
+                {props.groups.map((group, i) => (
+                  <>
+                    <tr id={i} key={`${i}-${group.groupName}`}>
+                      <td colSpan="4" className="text-center fw-bold">
+                        {group.groupName}&nbsp;Items
                       </td>
                     </tr>
-                  ))
-                )}
+                    {group.items.map((item, j) => (
+                      <tr id={j} key={`${i}-${j}`}>
+                        <td style={{ width: "70px" }}>{item.itemQuantity}</td>
+                        <td>
+                          {item.itemName} - {item.itemDescription}
+                        </td>
+                        <td className="text-end" style={{ width: "100px" }}>
+                          {props.currency} {item.itemPrice}
+                        </td>
+                        <td className="text-end" style={{ width: "100px" }}>
+                          {props.currency} {item.itemPrice * item.itemQuantity}
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                ))}
               </tbody>
             </Table>
             <Table>
@@ -116,17 +123,17 @@ const InvoiceModal = (props) => {
                     TAX
                   </td>
                   <td className="text-end" style={{ width: "100px" }}>
-                    {props.currency} {props.taxAmmount}
+                    {props.currency} {props.taxAmount}
                   </td>
                 </tr>
-                {props.discountAmmount !== 0.0 && (
+                {props.discountAmount !== 0.0 && (
                   <tr className="text-end">
                     <td></td>
                     <td className="fw-bold" style={{ width: "100px" }}>
                       DISCOUNT
                     </td>
                     <td className="text-end" style={{ width: "100px" }}>
-                      {props.currency} {props.discountAmmount}
+                      {props.currency} {props.discountAmount}
                     </td>
                   </tr>
                 )}

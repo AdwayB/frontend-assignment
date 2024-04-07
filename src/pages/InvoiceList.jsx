@@ -11,7 +11,6 @@ import { deleteInvoice } from "../redux/invoicesSlice";
 
 const InvoiceList = () => {
   const { invoiceList, getOneInvoice } = useInvoiceListData();
-  console.log(invoiceList);
   const isListEmpty = invoiceList.length === 0;
   const [copyId, setCopyId] = useState("");
   const navigate = useNavigate();
@@ -74,7 +73,7 @@ const InvoiceList = () => {
                 <tbody>
                   {invoiceList.map((invoice) => (
                     <InvoiceRow
-                      key={invoice.id}
+                      key={`${invoice.id}-${Date.now()}`}
                       invoice={invoice}
                       navigate={navigate}
                     />
